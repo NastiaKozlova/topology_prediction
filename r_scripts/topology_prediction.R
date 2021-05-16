@@ -122,10 +122,10 @@ for (i in 1:length(start)) {
     
     df_combine_topology<-df_combine%>%filter(topology_norm>topology_tresh)
     df_combine_factors<-df_combine%>%filter(tmd_cons>tmd_tresh)
-    df_combine_topology<-df_combine_topology%>%mutate(seq_beg=number-15)
-    df_combine_topology<-df_combine_topology%>%mutate(seq_end=number+15)
-    df_combine_factors<-df_combine_topology%>%mutate(seq_beg=number-15)
-    df_combine_factors<-df_combine_topology%>%mutate(seq_end=number+15)
+    df_combine_topology<-df_combine_topology%>%mutate(seq_beg=number-20)
+    df_combine_topology<-df_combine_topology%>%mutate(seq_end=number+20)
+    df_combine_factors<-df_combine_topology%>%mutate(seq_beg=number-20)
+    df_combine_factors<-df_combine_topology%>%mutate(seq_end=number+20)
     write.csv(df_combine_factors,paste0("prediction/topology_factors/",start[i],"/",tmd_len,".csv"),row.names = F)
     write.csv(df_combine_topology,paste0("prediction/topology_topology/",start[i],"/",tmd_len,".csv"),row.names = F)
     }
