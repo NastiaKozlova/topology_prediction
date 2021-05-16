@@ -130,9 +130,8 @@ for (i in 1:nrow(df_charactirise)) {
     #    geom_text(aes(x=charge_x,y=y_hidro,label=hydrofobic))+
     scale_y_continuous(breaks = NULL,labels = NULL,limits = c(0.5,3.5))+
     scale_x_continuous(breaks = x,labels = x,limits=c(min(df_topology$seq_beg),max(df_topology$seq_end)))+
-    facet_grid(program ~ .)+theme_bw()+ 
-    guides(color = "none")+scale_color_npg()+
-    guides(fill = "none")+scale_fill_npg()
+    facet_grid(program ~ .) + theme_bw()+ 
+    guides(color = "none") + guides(fill = "none")
   
   ggsave(plot = p0, filename = paste0("plot/charge/",df_charactirise$pdbID[i],".png"),  width = 22, height = 30, units = c("cm"), dpi = 300 )
 }
