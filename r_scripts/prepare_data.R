@@ -38,8 +38,8 @@ i<-1
 for (pH in v_pH) {
   if(!dir.exists(paste0( "charge/pH_",pH)))    { dir.create(paste0("charge/pH_",pH))}
 }
-#pH<-v_pH[1]
-#i<-1
+
+#convert topology to different format
 for (pH in v_pH) {
   for (i in 1:nrow(df_charactirise)) {
     df_topology_all<-read.csv(paste0(part_start,"start/topology/",(df_charactirise$pdbID[i]),".csv"),stringsAsFactors = F) 
@@ -78,15 +78,12 @@ for (pH in v_pH) {
     write.csv(df_topology,paste0("charge/pH_",pH,"/",df_charactirise$pdbID[i],".csv"),row.names = F)
   }
 }
-#seq_len<-seq_leng[1]
-#i<-1
-#j<-1
+#calculate hydrophobicity and charge of fragments with length from 13 to 20
 pH<-7.4
 if(!dir.exists(paste0( "hydrophobicity")))    { dir.create(paste0( "hydrophobicity"))}
 for (seq_len in seq_leng) {
   if(!dir.exists(paste0( "hydrophobicity/lenght_",seq_len)))    { dir.create(paste0( "hydrophobicity/lenght_",seq_len))}
   for (i in 1:nrow(df_charactirise)) {
-#    df_topology_all<-read.csv(paste0("topology/",(df_charactirise$pdbID[i]),".csv"),stringsAsFactors = F) 
     seq<-read.fasta(paste0(part_start,"start/sequence/",(df_charactirise$pdbID[i]),".fasta"))
     v_seq<-as.vector(seq$ali)
     df_topology<-data.frame(matrix(ncol=2,nrow = (length(v_seq)-seq_len+1)))
@@ -106,9 +103,8 @@ for (seq_len in seq_leng) {
 
 if(!dir.exists(paste0( "plot")))    { dir.create(paste0( "plot"))}
 if(!dir.exists(paste0( "plot/charge")))    { dir.create(paste0( "plot/charge"))}
-if(!dir.exists(paste0( "plot/hydrophobicity")))    { dir.create(paste0( "plot/hydrophobicity"))}
-#if(!dir.exists(paste0( "plot/pro_skampi")))    { dir.create(paste0( "plot/pro_skampi"))}
 x<-seq(from=0,to=5000,by=20)
+#make plot protein topology with charges 
 for (i in 1:nrow(df_charactirise)) {
   df_topology<-read.csv(paste0("charge/pH_7.4/",df_charactirise$pdbID[i],".csv"),stringsAsFactors =  F)
   df_topology<-df_topology%>%filter(program!="merge")
@@ -124,10 +120,8 @@ for (i in 1:nrow(df_charactirise)) {
   df_topology<-df_topology_ref%>%filter(program!="low_pH")
   p0<-ggplot(data = df_topology)+
     labs(x="",y="",title =df_charactirise$pdbID[i] )+
-    #    geom_segment(aes(x=seq_beg,xend=seq_end,y=topology_number,yend=topology_number,colour=type))+
     geom_rect(aes(xmin=seq_beg,xmax=seq_end,ymin=topology_number,ymax=topology_end,colour=type,fill=type))+
     geom_text(aes(x=charge_x,y=charge_y,label=charge))+
-    #    geom_text(aes(x=charge_x,y=y_hidro,label=hydrofobic))+
     scale_y_continuous(breaks = NULL,labels = NULL,limits = c(0.5,3.5))+
     scale_x_continuous(breaks = x,labels = x,limits=c(min(df_topology$seq_beg),max(df_topology$seq_end)))+
     facet_grid(program ~ .) + theme_bw()+ 
