@@ -1,4 +1,4 @@
-part_start<-'/home/nastia/projects/topology_prediction/'
+part_start<-'path to dyur directory'
 #Put protein sequence into start/sequence/your_protein_name(),
 #sequenses to wich you want to compare put into start/alignment/your_protein_name
 #form Uniprot
