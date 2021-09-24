@@ -1,6 +1,6 @@
 # topology_prediction
 
-Predict topology of transmembrane protein based on predicted topologies and other factors.
+Predict topology of transmembrane protein based on predicted topologies and other factors such as charge, hydrophobisity and conservatism.
 Change part\_start to your working directory name
 # Input
 Put protein sequence into _*start/sequence/protein_name*_, sequenses to wich you
@@ -22,7 +22,7 @@ Programs:
 
 R pacages:
 
-1. dplyr
-2. ggplot2
-3. cowplot
-4. Peptides
+1. dplyr (install.packages("dplyr"))
+2. ggplot2 (install.packages("ggplot2"))
+3. cowplot (install.packages("cowplot"))
+4. Peptides (install.packages("Peptides"))
