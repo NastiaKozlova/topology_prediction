@@ -39,6 +39,7 @@ for (i in 1:length(start)) {
     df_conservative<-read.csv(paste0(part_start,"prediction/conservative/",start[i],".csv"),stringsAsFactors = F)
     df_conservative<-full_join(df_conservative,df_mutations,by=c("number"="Amino_Acid"))
     df_conservative<-df_conservative%>%filter(!is.na(Sites))
+    df_interesting_domains<-read.csv(paste0(part_start,"start/interesting_domains/",start[i],".csv"),stringsAsFactors = F) 
     
 #    df_conservative<-df_conservative%>%filter(conservative>90)
   }
@@ -48,11 +49,13 @@ for (i in 1:length(start)) {
     a<-file.exists(paste0( "topology/topology_full/",start[i],"/",tmd_len,".csv"))
     b<-file.exists(paste0( "topology/topology_topology/",start[i],"/",tmd_len,".csv"))
     c<-file.exists(paste0( "topology/topology_factors/",start[i],"/",tmd_len,".csv"))
+
     if (a&b&c){
       df_combine<-read.csv(paste0( "topology/topology_full/",start[i],"/",tmd_len,".csv"),stringsAsFactors = F)
       df_combine_topology<-read.csv(paste0("topology/topology_topology/",start[i],"/",tmd_len,".csv"),stringsAsFactors = F)
       df_combine_factors<-read.csv(paste0("topology/topology_factors/",start[i],"/",tmd_len,".csv"),stringsAsFactors = F)
       df_topology<-read.csv(paste0("charge/pH_",pH,"/",start[i],".csv"),stringsAsFactors = F)
+
       df_topology<-df_topology%>%filter(type=="Transmembrane")
       df_QSSS<-df_combine%>%mutate(motif=NA)
       for (j in 1:nrow(df_QSSS)) {
@@ -64,11 +67,7 @@ for (i in 1:length(start)) {
       v_mutations<-sort(unique(df_mutations$POSITION))
       p0_cf<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="charge full")+
-        
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
        # geom_vline(xintercept=df_conservative$number)+
         geom_line(aes(x=number,y=charge,alpha=10))+
         geom_segment(aes(x=Inf,xend=-Inf,y=0,yend=0))+
@@ -83,11 +82,7 @@ for (i in 1:length(start)) {
       p0_all<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="TMD nornalised")+
         
-        geom_rect(aes(xmin = 110, ymin = -Inf, xmax= 249, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=tmd_cons,alpha=10,colour="hydrofobic"))+
         geom_line(aes(x=number,y=topology_norm,alpha=10,colour="topology"))+
         geom_vline(xintercept = QSSS)+
@@ -102,11 +97,7 @@ for (i in 1:length(start)) {
       p0_ch<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="charge")+
        # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = 110, ymin = -Inf, xmax= 249, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=charge_norn,alpha=10))+
         geom_vline(xintercept = QSSS)+
        # geom_vline(xintercept=df_conservative$number)+
@@ -119,12 +110,7 @@ for (i in 1:length(start)) {
       
       p0_h<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="hydrofobic")+
-        
-        geom_rect(aes(xmin = 110, ymin = -Inf, xmax= 249, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=hydrofobic_norn,alpha=10))+
         geom_vline(xintercept = QSSS)+
        # geom_vline(xintercept=df_conservative$number)+
@@ -137,12 +123,7 @@ for (i in 1:length(start)) {
       
       p0_c<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="conservative")+
-       # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = 110, ymin = -Inf, xmax= 249, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=conservative_norn,alpha=10))+
         geom_vline(xintercept = QSSS)+
        # geom_vline(xintercept=df_conservative$number)+
@@ -156,11 +137,7 @@ for (i in 1:length(start)) {
       p0_t<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="topology")+
        # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = 110, ymin = -Inf, xmax= 249, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=topology_norm,alpha=10))+
         geom_vline(xintercept = QSSS)+
        # geom_vline(xintercept=df_conservative$number)+
@@ -175,11 +152,7 @@ for (i in 1:length(start)) {
       p1<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="")+
        # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = 110, ymin = -Inf, xmax= 249, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_segment(aes(x=seq_beg,xend=seq_end,y="Topology\nfactors",yend="Topology\nfactors",alpha=10),data =df_combine_factors)+
         geom_segment(aes(x=seq_beg,xend=seq_end,y="Topology\non topology",yend="Topology\non topology", alpha=10),data =df_combine_topology )+
         scale_color_manual(values = v_palette)+scale_fill_manual(values = v_palette,name="Domain name")+
@@ -191,11 +164,7 @@ for (i in 1:length(start)) {
       p2<-ggplot(data = df_topology)+
         labs(x="Number amino acid",y="")+
        # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = 110, ymin = -Inf, xmax= 249, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 374, ymin = -Inf, xmax= 560, ymax = Inf,fill="active center",color="active center"))+
-        geom_rect(aes(xmin = 1, ymin = -Inf, xmax= 100, ymax = Inf,fill="N-domain",color="N-domain"))+
-        geom_rect(aes(xmin = 574, ymin = -Inf, xmax= protein_leng, ymax = Inf,fill="C-domain",color="C-domain"))+
-        geom_rect(aes(xmin = 250, ymin = -Inf, xmax= 360, ymax = Inf,fill="EMD4",color="EMD4"))+
+        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_vline(xintercept = QSSS)+
        # geom_vline(xintercept=df_conservative$number)+
         scale_color_manual(values = v_palette)+scale_fill_manual(values = v_palette,name="Domain name")+
