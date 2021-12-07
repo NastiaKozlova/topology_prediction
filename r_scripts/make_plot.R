@@ -34,9 +34,11 @@ tmd_len<-13
 pH<-7.4
 for (i in 1:length(start)) {
   seq<-read.fasta(paste0(part_start,"start/sequence/",start[i],".fasta"))
+  df_conservative<-read.csv(paste0(part_start,"prediction/conservative/",start[i],".csv"),stringsAsFactors = F)
   if(file.exists(paste0(part_start,"start/mutations/",start[i],".csv"))){
     df_mutations<-read.csv(paste0(part_start,"start/mutations/",start[i],".csv"),stringsAsFactors = F)
-    df_conservative<-read.csv(paste0(part_start,"prediction/conservative/",start[i],".csv"),stringsAsFactors = F)
+    v_mutations<-sort(unique(df_mutations$POSITION))
+#    df_conservative<-read.csv(paste0(part_start,"prediction/conservative/",start[i],".csv"),stringsAsFactors = F)
     df_conservative<-full_join(df_conservative,df_mutations,by=c("number"="Amino_Acid"))
     df_conservative<-df_conservative%>%filter(!is.na(Sites))
     df_interesting_domains<-read.csv(paste0(part_start,"start/interesting_domains/",start[i],".csv"),stringsAsFactors = F) 
@@ -64,11 +66,11 @@ for (i in 1:length(start)) {
       df_QSSS<-df_QSSS%>%filter(motif>0)
       df_QSSS<-df_QSSS%>%mutate(motif=(motif+seq_beg))
       QSSS<-unique(df_QSSS$motif)
-      v_mutations<-sort(unique(df_mutations$POSITION))
+
       p0_cf<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="charge full")+
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
-       # geom_vline(xintercept=df_conservative$number)+
+#        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+
         geom_line(aes(x=number,y=charge,alpha=10))+
         geom_segment(aes(x=Inf,xend=-Inf,y=0,yend=0))+
         scale_color_manual(values = v_palette,name="normalised parameters")+scale_fill_manual(values = v_palette,name="Domain name")+
@@ -82,11 +84,10 @@ for (i in 1:length(start)) {
       p0_all<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="TMD nornalised")+
         
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+#        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=tmd_cons,alpha=10,colour="hydrofobic"))+
         geom_line(aes(x=number,y=topology_norm,alpha=10,colour="topology"))+
         geom_vline(xintercept = QSSS)+
-       # geom_vline(xintercept=df_conservative$number)+
         scale_color_manual(values = v_palette,name="normalised parameters")+scale_fill_manual(values = v_palette,name="Domain name")+
         guides(color = "none")+
         guides(alpha = "none")+
@@ -96,11 +97,9 @@ for (i in 1:length(start)) {
       
       p0_ch<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="charge")+
-       # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+ #       geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=charge_norn,alpha=10))+
         geom_vline(xintercept = QSSS)+
-       # geom_vline(xintercept=df_conservative$number)+
         scale_color_manual(values = v_palette,name="normalised parameters")+scale_fill_manual(values = v_palette,name="Domain name")+
         guides(color = "none")+
         guides(alpha = "none")+
@@ -110,10 +109,9 @@ for (i in 1:length(start)) {
       
       p0_h<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="hydrofobic")+
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+ #       geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=hydrofobic_norn,alpha=10))+
         geom_vline(xintercept = QSSS)+
-       # geom_vline(xintercept=df_conservative$number)+
         scale_color_manual(values = v_palette,name="normalised parameters")+scale_fill_manual(values = v_palette,name="Domain name")+
         guides(color = "none")+
         guides(alpha = "none")+
@@ -123,10 +121,9 @@ for (i in 1:length(start)) {
       
       p0_c<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="conservative")+
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+#        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=conservative_norn,alpha=10))+
         geom_vline(xintercept = QSSS)+
-       # geom_vline(xintercept=df_conservative$number)+
         scale_color_manual(values = v_palette,name="normalised parameters")+scale_fill_manual(values = v_palette,name="Domain name")+
         guides(color = "none")+
         guides(alpha = "none")+
@@ -136,37 +133,29 @@ for (i in 1:length(start)) {
       
       p0_t<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="topology")+
-       # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+ #       geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_line(aes(x=number,y=topology_norm,alpha=10))+
         geom_vline(xintercept = QSSS)+
-       # geom_vline(xintercept=df_conservative$number)+
         scale_color_manual(values = v_palette,name="normalised parameters")+scale_fill_manual(values = v_palette,name="Domain name")+
         guides(color = "none")+
         guides(alpha = "none")+
         guides(fill = "none")+
-        #geom_segment(aes(x=seq_beg,xend=seq_end,y=0,yend=0),data=df_topology_Uniprot)+ 
-        #geom_segment(aes(x=seq_beg,xend=seq_end,y=0,yend=0),data=df_topology_Uniprot)+
         scale_x_continuous(limits = c(0,protein_leng),breaks = seq(from=0,to=protein_leng,by=20),labels =seq(from=0,to=protein_leng,by=20) )+
         theme_bw()+  theme(legend.position = "bottom")
       p1<-ggplot(data = df_combine)+
         labs(x="Number amino acid",y="")+
-       # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+#        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_segment(aes(x=seq_beg,xend=seq_end,y="Topology\nfactors",yend="Topology\nfactors",alpha=10),data =df_combine_factors)+
         geom_segment(aes(x=seq_beg,xend=seq_end,y="Topology\non topology",yend="Topology\non topology", alpha=10),data =df_combine_topology )+
         scale_color_manual(values = v_palette)+scale_fill_manual(values = v_palette,name="Domain name")+
         geom_vline(xintercept = QSSS)+
-       # geom_vline(xintercept=df_conservative$number)+
         guides(color = "none")+   guides(alpha = "none")+  #guides(fill = "none")+
         scale_x_continuous(limits = c(0,protein_leng),breaks = seq(from=0,to=protein_leng,by=20),labels =seq(from=0,to=protein_leng,by=20) )+
         theme_bw()+  theme(legend.position = "bottom")
       p2<-ggplot(data = df_topology)+
         labs(x="Number amino acid",y="")+
-       # geom_vline(xintercept=df_conservative$number)+
-        geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
+ #       geom_rect(aes(xmin = start, ymin = -Inf, xmax= finish, ymax = Inf,fill=type,color=type),data = df_interesting_domains)+
         geom_vline(xintercept = QSSS)+
-       # geom_vline(xintercept=df_conservative$number)+
         scale_color_manual(values = v_palette)+scale_fill_manual(values = v_palette,name="Domain name")+
         guides(color = "none")+guides(alpha = "none")+  guides(fill = "none")+
         scale_x_continuous(limits = c(0,protein_leng),breaks = seq(from=0,to=protein_leng,by=20),labels =seq(from=0,to=protein_leng,by=20) )+

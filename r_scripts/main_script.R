@@ -1,8 +1,16 @@
 part_start<-'path to your directory'
+setwd(part_start)
 #Put protein sequence into start/sequence/your_protein_name(),
 #sequenses to wich you want to compare put into start/alignment/your_protein_name
 #form Uniprot
 #predicted topologies put into start/topology/protein_name.
+v_protein_name<-list.files("start/sequence/")
+i<-1
+for (i in 1:length(v_protein_name)) {
+  system(command = paste0('docker exec --user user topcons2 script /dev/null -c "/app/topcons2/run_topcons2.sh /scratch/start/sequence/',
+                          v_protein_name[i],' -outpath  /scratch/start/topology"'),ignore.stdout=T,wait = T)
+}
+
 system(command = paste0("Rscript --vanilla  ",part_start,"r_scripts/prepare_data.R ",part_start),ignore.stdout=T,wait = T) 
 #charge and hydrophobicity of protein domains predicted by many programs are in prediction/charge
 #charge and hydrophobicity of protein pieses of sequence are in prediction/hydrophobicity

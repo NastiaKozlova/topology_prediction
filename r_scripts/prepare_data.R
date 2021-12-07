@@ -42,30 +42,67 @@ for (pH in v_pH) {
 #convert topology to different format
 for (pH in v_pH) {
   for (i in 1:nrow(df_charactirise)) {
-    df_topology_all<-read.csv(paste0(part_start,"start/topology/",(df_charactirise$pdbID[i]),".csv"),stringsAsFactors = F) 
+    #read seq
     seq<-read.fasta(paste0(part_start,"start/sequence/",(df_charactirise$pdbID[i]),".fasta"))
     v_seq<-as.vector(seq$ali)
-    j<-0
-    df_topology<-df_topology_all[,(j*3+1):(j*3+3)]
-    name<-colnames(df_topology)[1] 
-    colnames(df_topology)<-c("seq_beg","seq_end","type")
-    df_topology<- df_topology%>%mutate(program=name)
-  
-    for (j in (1:(ncol(df_topology_all)/3-1))) {
-      df_topology_add<-df_topology_all[,(j*3+1):(j*3+3)]
-      name<-colnames(df_topology_add)[1] 
-      colnames(df_topology_add)<-c("seq_beg","seq_end","type")
-      df_topology_add<- df_topology_add%>%mutate(program=name)
+    
+    v_topology<-list.files(paste0(part_start,"start/topology/",(df_charactirise$pdbID[i]),"/seq_0/"))
+    a<-c("OCTOPUS", "philius","PolyPhobius",  "SCAMPI_MSA",     "SPOCTOPUS","Topcons")
+    v_topology<-a[a%in%v_topology]
+    
+    df_topology<-data.frame(matrix(ncol=4,nrow=length(v_seq)))
+    colnames(df_topology)<-c("resno","resid","topology","program")
+    df_topology$resid<-v_seq
+    df_TEMP<-read.table(paste0(part_start,"start/topology/",df_charactirise$pdbID[i],"/seq_0/Topcons/topcons.top"),header = F)
+    v_test<-strsplit(df_TEMP[1,1],split = "",fixed = T)[[1]]
+    df_topology$topology<-v_test
+    df_topology$program<-"Topcons"
+    df_topology<-df_topology%>%mutate(resno=1:nrow(df_topology))
+    v_topology<-v_topology[v_topology!="Topcons"]
+    df_topology<-df_topology%>%mutate(seq_beg=resno)
+    df_topology<-df_topology%>%mutate(seq_end=resno)
+    j<-2
+    for (j in 2:nrow(df_topology)) {
+      if(df_topology$topology[j-1]==df_topology$topology[j]){
+        df_topology$seq_beg[j]<-df_topology$seq_beg[j-1]
+        df_topology$resno[j-1]<-NA
+      }
+    }
+    df_topology<-df_topology%>%filter(!is.na(resno))
+    for (p in 1:length(v_topology)) {
+      
+      df_topology_add<-data.frame(matrix(ncol=4,nrow=length(v_seq)))
+      colnames(df_topology_add)<-c("resno","resid","topology","program")
+      df_topology_add$resid<-v_seq
+      df_TEMP<-read.table(paste0(part_start,"start/topology/",df_charactirise$pdbID[i],"/seq_0/Topcons/topcons.top"),header = F)
+      v_test<-strsplit(df_TEMP[1,1],split = "",fixed = T)[[1]]
+      df_topology_add$topology<-v_test
+      df_topology_add$program<-v_topology[p]
+      df_topology_add<-df_topology_add%>%mutate(resno=1:nrow(df_topology_add))
+      df_topology_add<-df_topology_add%>%mutate(seq_beg=resno)
+      df_topology_add<-df_topology_add%>%mutate(seq_end=resno)
+      
+      for (j in 2:nrow(df_topology_add)) {
+        if(df_topology_add$topology[j-1]==df_topology_add$topology[j]){
+          df_topology_add$seq_beg[j]<-df_topology_add$seq_beg[j-1]
+          df_topology_add$resno[j-1]<-NA
+        }
+      }
       df_topology<-rbind(df_topology,df_topology_add)
     }
-    df_topology<-unique(df_topology)
-    df_topology<-df_topology%>%filter(!is.na(seq_beg))
+    df_topology<-df_topology%>%filter(!is.na(resno))
+    df_topology$type[df_topology$topology=="i"]<-"Cytoplasmic"
+    df_topology$type[df_topology$topology=="M"]<-"Transmembrane"
+    df_topology$type[df_topology$topology=="o"]<-"Extracellular"
+    df_topology<-df_topology%>%select(seq_beg,seq_end,type,program)
     df_topology<- df_topology%>%mutate(seq=NA)
     for (q in 1:nrow(df_topology)) {
       df_topology$seq[q]<-paste0(v_seq[df_topology$seq_beg[q]:df_topology$seq_end[q]],collapse = "")
     }
+    
     df_topology<- df_topology%>%mutate(charge=round(charge(seq, pH = pH, pKscale = "Stryer") ,digits = 1))
     df_topology<- df_topology%>%mutate(hydrofobic=round(hydrophobicity(seq, scale = "Engelman"),digits = 1))
+    
     df_topology$topology_number[df_topology$type=="Cytoplasmic"]<-1
     df_topology$topology_number[df_topology$type=="Transmembrane"]<-2
     df_topology$topology_number[df_topology$type=="Extracellular"]<-3

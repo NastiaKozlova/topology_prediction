@@ -92,9 +92,9 @@ for (i in 1:length(start)) {
     write.csv(df_combine,paste0( "topology/topology_full/",start[i],"/",tmd_len,".csv"),row.names = F)
     topology_tresh<-quantile(df_combine$topology_norm,probs = threshold,na.rm = T)
     tmd_tresh<-quantile(df_combine$tmd_cons,probs = threshold,na.rm = T)
-    df_combine_topology<-df_combine%>%filter(topology_norm>topology_tresh)
+    df_combine_topology<-df_combine%>%filter(topology_norm>=topology_tresh)
 
-    df_combine_factors<-df_combine%>%filter(tmd_cons>tmd_tresh)
+    df_combine_factors<-df_combine%>%filter(tmd_cons>=tmd_tresh)
 
     
     if(nrow(df_combine_topology)>0){
